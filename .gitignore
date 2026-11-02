@@ -1,0 +1,15 @@
+# Dependencies & Virtual Environments
+node_modules/
+venv/
+env/
+.env
+
+# Build & Output Directories
+dist/
+build/
+*.pyc
+__pycache__/
+
+# OS System Files
+.DS_Store
+Thumbs.db

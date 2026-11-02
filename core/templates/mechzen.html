@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MechZen | Industrial Equipment & Manual Assistant</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            lime: '#A3E635',
+                            limeDark: '#65A30D',
+                            amber: '#F59E0B',
+                            dark: '#0B0F17',
+                            card: '#131924',
+                            border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0B0F17;
+            color: #F3F4F6;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* macOS Floating Dock Style */
+        .apple-navbar {
+            background: rgba(19, 25, 36, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Liquid Glass Card Effect */
+        .liquid-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        /* Smooth Image Zoom Effect */
+        .zoom-img-container {
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: rgba(15, 23, 42, 0.8);
+        }
+
+        .zoom-img-container img {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: transform;
+        }
+
+        .zoom-img-container:hover img {
+            transform: scale(1.08);
+        }
+
+        /* Liquid Glass Active Pill Transition */
+        .active-pill {
+            background: linear-gradient(135deg, rgba(163, 230, 53, 0.25) 0%, rgba(163, 230, 53, 0.1) 100%);
+            border: 1px solid rgba(163, 230, 53, 0.5);
+            color: #A3E635 !important;
+            box-shadow: 0 0 15px rgba(163, 230, 53, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            border-radius: 9999px;
+        }
+
+        .hero-bg {
+            background: linear-gradient(180deg, rgba(11, 15, 23, 0.45) 0%, rgba(11, 15, 23, 0.98) 100%),
+                        url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+        }
+
+        /* Spotlight Tour Overlay */
+        .spotlight-active {
+            position: relative;
+            z-index: 101 !important;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85), 0 0 25px #A3E635 !important;
+            border-radius: 12px;
+            pointer-events: auto !important;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0B0F17; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #A3E635; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-lime selection:text-black">
+
+    <!-- SPOTLIGHT ONBOARDING TOOLTIP -->
+    <div id="spotlight-tooltip" class="hidden fixed z-[102] max-w-xs w-full liquid-glass p-4 rounded-2xl border-2 border-brand-lime shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono bg-brand-lime text-black font-bold px-2 py-0.5 rounded" id="tour-step-badge">STEP 1/3</span>
+            <button onclick="endOnboardingTour()" class="text-gray-400 hover:text-white text-xs">Skip Tour</button>
+        </div>
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider" id="tour-title">Welcome</h4>
+        <p class="text-xs text-gray-300 leading-relaxed" id="tour-desc">Tour description...</p>
+        <div class="flex justify-between items-center pt-2 border-t border-gray-800">
+            <button onclick="prevTourStep()" id="tour-prev-btn" class="text-[11px] text-gray-400 hover:text-white disabled:opacity-30">Previous</button>
+            <button onclick="nextTourStep()" id="tour-next-btn" class="px-3 py-1 bg-brand-lime text-black font-bold text-xs rounded-lg uppercase">Next</button>
+        </div>
+    </div>
+
+    <!-- FLOATING APPLE STYLE NAVBAR WITH LIQUID GLASS ACTIVE SEGMENTS -->
+    <div class="fixed top-5 inset-x-0 z-50 flex justify-center px-4">
+        <header class="apple-navbar max-w-6xl w-full rounded-full px-6 py-2.5 flex items-center justify-between transition-all duration-300">
+            
+            <!-- Brand Title -->
+            <div class="cursor-pointer" onclick="switchView('landing')">
+                <span class="text-2xl font-black tracking-tight text-white uppercase font-heading">
+                    Mech<span class="text-brand-lime">Zen</span>
+                </span>
+            </div>
+
+            <!-- Liquid Glass Nav Pills -->
+            <nav class="hidden md:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-gray-300 p-1 bg-gray-900/40 rounded-full border border-white/5">
+                <button onclick="switchView('landing')" id="nav-landing" class="px-4 py-2 transition-all duration-200 hover:text-brand-lime rounded-full">Overview</button>
+                <button onclick="switchView('fleet')" id="nav-fleet" class="px-4 py-2 transition-all duration-200 hover:text-brand-lime rounded-full">Equipment Fleet</button>
+                
+                <!-- Role Workspaces -->
+                <button onclick="switchView('admin')" id="nav-admin" class="hidden px-4 py-2 transition-all duration-200 text-brand-lime font-bold rounded-full">Admin Portal</button>
+                <button onclick="switchView('engineer')" id="nav-engineer" class="hidden px-4 py-2 transition-all duration-200 text-brand-lime font-bold rounded-full">Manual Assistant</button>
+                <button onclick="switchView('supervisor')" id="nav-supervisor" class="hidden px-4 py-2 transition-all duration-200 text-brand-lime font-bold rounded-full">Audit Portal</button>
+            </nav>
+
+            <!-- Circular Profile Avatar & Dropdown -->
+            <div class="relative">
+                <button id="profile-avatar-btn" onclick="toggleAvatarMenu()" class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-lime to-emerald-500 p-0.5 shadow-lg shadow-brand-lime/20 focus:outline-none transition transform hover:scale-105">
+                    <img id="user-avatar-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Profile" class="w-full h-full object-cover rounded-full">
+                </button>
+
+                <!-- Apple Style Dropdown Menu -->
+                <div id="avatar-dropdown" class="hidden absolute right-0 mt-3 w-64 liquid-glass rounded-2xl p-3 shadow-2xl space-y-2 z-50 text-xs">
+                    <div class="px-3 py-2 border-b border-white/10 space-y-1">
+                        <p class="font-bold text-white text-xs" id="dropdown-user-name">Guest User</p>
+                        <p class="text-[11px] font-mono text-brand-lime" id="dropdown-user-role">Role: Not Logged In</p>
+                    </div>
+
+                    <div class="space-y-1 py-1" id="dropdown-workspace-links"></div>
+
+                    <div class="border-t border-white/10 pt-1 space-y-1">
+                        <button onclick="openAuthModal()" class="w-full text-left px-3 py-2 rounded-xl text-gray-200 hover:bg-brand-lime hover:text-black font-semibold transition flex items-center justify-between">
+                            <span>Sign In / Switch Role</span>
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                        </button>
+                        <button onclick="openProfileModal()" class="w-full text-left px-3 py-2 rounded-xl text-gray-300 hover:bg-gray-800 transition flex items-center justify-between">
+                            <span>Change Profile Picture</span>
+                            <i class="fa-solid fa-image"></i>
+                        </button>
+                        <button onclick="logoutUser()" class="w-full text-left px-3 py-2 rounded-xl text-red-400 hover:bg-red-500/10 font-semibold transition flex items-center justify-between">
+                            <span>Log Out</span>
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </header>
+    </div>
+
+    <!-- MAIN MULTI-PAGE CONTAINER -->
+    <main class="flex-grow pt-28">
+
+        <!-- VIEW 1: LANDING OVERVIEW -->
+        <section id="view-landing" class="space-y-16 transition-all">
+            <div class="hero-bg min-h-[500px] flex items-center px-6 lg:px-16 relative">
+                <div class="max-w-4xl space-y-6">
+                    <span class="px-3.5 py-1 rounded-full text-xs font-mono bg-brand-lime/10 border border-brand-lime/30 text-brand-lime font-bold uppercase tracking-wider">
+                        Plant Operations & Verification Center
+                    </span>
+                    <h1 class="text-3xl md:text-6xl font-black text-white uppercase tracking-tight leading-tight">
+                        Intelligent Equipment <br><span class="text-brand-lime">Manual Assistant</span>
+                    </h1>
+                    <p class="text-gray-300 text-xs md:text-sm leading-relaxed max-w-2xl">
+                        Instant, verifiable maintenance instructions grounded strictly in equipment manuals. Zero cross-machine context leakage.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-4">
+                        <button onclick="triggerAssistantAccess()" class="px-8 py-3.5 bg-brand-lime hover:bg-brand-limeDark text-black font-black rounded-lg text-xs uppercase tracking-wider transition shadow-lg shadow-brand-lime/20">
+                            Launch Assistant Studio
+                        </button>
+                        <button onclick="switchView('fleet')" class="px-7 py-3.5 bg-gray-900/90 hover:bg-gray-800 text-white font-bold rounded-lg border border-gray-700 text-xs uppercase tracking-wider transition">
+                            View Equipment Fleet
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Capability Highlights -->
+            <div class="max-w-7xl mx-auto px-6 space-y-6">
+                <div class="border-b border-gray-800 pb-4 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-xl font-bold text-white uppercase tracking-wider">System Capabilities</h2>
+                        <p class="text-xs text-gray-400">Strict machine isolation and verifiable answers</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="liquid-glass p-6 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-lime/10 border border-brand-lime/30 flex items-center justify-center text-brand-lime font-bold">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white uppercase">Machine Context Lock</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">Search context is locked strictly to the selected equipment. Manuals from other machines are completely excluded.</p>
+                    </div>
+
+                    <div class="liquid-glass p-6 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-lime/10 border border-brand-lime/30 flex items-center justify-center text-brand-lime font-bold">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white uppercase">Verifiable Page Citations</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">Answers display exact document IDs, revisions, and PDF page numbers for instant physical manual cross-checking.</p>
+                    </div>
+
+                    <div class="liquid-glass p-6 rounded-2xl space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-lime/10 border border-brand-lime/30 flex items-center justify-center text-brand-lime font-bold">
+                            <i class="fa-solid fa-shield-halved"></i>
+                        </div>
+                        <h3 class="text-sm font-bold text-white uppercase">Evidence Guardrails</h3>
+                        <p class="text-xs text-gray-400 leading-relaxed">If manuals lack required instructions, the assistant explicitly reports missing information rather than hallucinating.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EQUIPMENT FLEET DISPLAYED DIRECTLY ON OVERVIEW PAGE -->
+            <div class="max-w-7xl mx-auto px-6 space-y-8 pb-12">
+                <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white uppercase tracking-wider">Registered Equipment Fleet</h2>
+                        <p class="text-xs text-gray-400">Indexed equipment fleet and manual references available on site</p>
+                    </div>
+                    <button onclick="switchView('fleet')" class="text-xs font-mono text-brand-lime font-bold hover:underline flex items-center gap-2">
+                        <span>Full Fleet View</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="overview-fleet-card-container">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: EQUIPMENT FLEET -->
+        <section id="view-fleet" class="max-w-7xl mx-auto px-6 space-y-8 hidden transition-all">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white uppercase tracking-wider">Registered Plant Equipment</h2>
+                    <p class="text-xs text-gray-400">Indexed machines and active manual references</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="fleet-card-container">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- VIEW 3: ADMINISTRATOR PORTAL -->
+        <section id="view-admin" class="max-w-7xl mx-auto px-6 space-y-8 hidden transition-all">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+                <div>
+                    <h2 class="text-2xl font-bold text-white uppercase tracking-wider flex items-center gap-3">
+                        <i class="fa-solid fa-user-gear text-brand-lime"></i> Administrator Command Portal
+                    </h2>
+                    <p class="text-xs text-gray-400">Register new equipment and upload manual PDFs with revision tracking</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- Machine Register Form -->
+                <div class="lg:col-span-5 space-y-6" id="tour-admin-register">
+                    <div class="liquid-glass p-6 rounded-2xl space-y-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Register Equipment &amp; Photo</h3>
+                        <form id="machine-form" onsubmit="handleRegisterMachine(event)" class="space-y-4" enctype="multipart/form-data">
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Machine ID (e.g. M-HP200)</label>
+                                <input type="text" id="reg-id" required placeholder="M-HP200" class="w-full bg-gray-900/90 border border-gray-700 rounded-lg px-3.5 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Equipment Name</label>
+                                <input type="text" id="reg-name" required placeholder="HP-200 Hydraulic Press" class="w-full bg-gray-900/90 border border-gray-700 rounded-lg px-3.5 py-2 text-xs text-white">
+                            </div>
+                            <!-- Direct Photo Upload from Gallery -->
+                            <div>
+                                <label class="block text-xs text-gray-300 mb-1">Equipment Photo (Choose from Device Gallery)</label>
+                                <div class="border-2 border-dashed border-gray-700 hover:border-brand-lime bg-gray-900/60 rounded-xl p-4 text-center cursor-pointer" onclick="document.getElementById('reg-img-input').click()">
+                                    <input type="file" id="reg-img-input" accept="image/*" class="hidden" onchange="previewRegisterImage(this)">
+                                    <i class="fa-solid fa-image text-xl text-brand-lime mb-1"></i>
+                                    <p class="text-xs font-bold text-white" id="reg-img-label">Select image from gallery</p>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full py-3 bg-brand-lime text-black font-black rounded-lg text-xs uppercase tracking-wider">
+                                Register Equipment Record
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Manual Upload & Delete Panel -->
+                <div class="lg:col-span-7 space-y-6" id="tour-admin-upload">
+                    <div class="liquid-glass p-6 rounded-2xl space-y-5">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Upload Manual PDF</h3>
+                        <form id="manual-form" onsubmit="handleUploadManual(event)" class="space-y-4" enctype="multipart/form-data">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-gray-300 mb-1">Machine ID</label>
+                                    <input type="text" id="upload-machine-id" required placeholder="e.g. M-HP200" class="w-full bg-gray-900/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-300 mb-1">Document ID</label>
+                                    <input type="text" id="upload-docid" required placeholder="e.g. HP-OPS-01" class="w-full bg-gray-900/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-300 mb-1">Revision</label>
+                                    <input type="text" id="upload-revision" required placeholder="e.g. 1.0" class="w-full bg-gray-900/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white">
+                                </div>
+                            </div>
+
+                            <div class="border-2 border-dashed border-gray-700 hover:border-brand-lime bg-gray-900/60 rounded-xl p-6 text-center space-y-2 cursor-pointer" onclick="document.getElementById('pdf-file-input').click()">
+                                <input type="file" id="pdf-file-input" name="file" accept=".pdf" class="hidden" onchange="updateFileLabel(this)">
+                                <i class="fa-solid fa-file-pdf text-2xl text-brand-lime"></i>
+                                <p class="text-xs font-bold text-white" id="upload-file-label">Click or drag PDF manual here</p>
+                            </div>
+
+                            <button type="submit" class="w-full py-3 bg-gray-800 hover:bg-gray-700 text-white font-bold rounded-lg text-xs uppercase tracking-wider border border-gray-700">
+                                Index Manual Pages
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Manage/Delete Active Manuals -->
+                    <div class="liquid-glass p-6 rounded-2xl space-y-4">
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Manage Active Manuals</h3>
+                        <div id="admin-manuals-manage-list" class="space-y-2">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 4: ENGINEER MANUAL ASSISTANT -->
+        <section id="view-engineer" class="max-w-7xl mx-auto px-6 space-y-6 hidden transition-all">
+            <div class="liquid-glass p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4" id="tour-engineer-select">
+                <div>
+                    <h2 class="text-base font-bold text-white">Engineer Manual Search Studio</h2>
+                    <p class="text-xs text-gray-400">Context-locked manual search with exact page citations</p>
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <label class="text-xs font-bold text-brand-lime uppercase tracking-wider">Selected Machine:</label>
+                    <select id="engineer-machine-select" onchange="renderEngineerStudio()" class="bg-gray-900 border border-brand-lime/40 text-white text-xs font-bold rounded-lg px-4 py-2.5 w-full md:w-64">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Sidebar: Evaluation Questions & 5-10 Recent History -->
+                <div class="lg:col-span-4 space-y-4">
+                    <div class="liquid-glass p-5 rounded-2xl space-y-3">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-brand-lime">Practice Evaluation Questions</h3>
+                        <div class="space-y-2" id="sample-questions-list"></div>
+                    </div>
+
+                    <div class="liquid-glass p-5 rounded-2xl space-y-3" id="tour-engineer-history">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                            <span>Recent Search History</span>
+                            <span class="text-[10px] font-mono bg-gray-800 px-2 py-0.5 rounded text-gray-300" id="engineer-history-count">0 / 10</span>
+                        </h3>
+                        <div class="space-y-2 max-h-64 overflow-y-auto" id="engineer-history-sidebar"></div>
+                    </div>
+                </div>
+
+                <!-- Main Search Workspace -->
+                <div class="lg:col-span-8 space-y-4" id="tour-engineer-query">
+                    <div class="liquid-glass p-6 rounded-2xl min-h-[460px] flex flex-col justify-between space-y-6">
+                        <div id="rag-output-container" class="space-y-6">
+                            <div class="p-4 rounded-xl bg-gray-900 border border-gray-800 text-xs text-gray-300 leading-relaxed">
+                                <span class="font-bold text-brand-lime uppercase block mb-1">Context Isolation Active</span>
+                                Select a target machine above and enter your maintenance question. Responses are strictly grounded in that machine's indexed manual pages.
+                            </div>
+                        </div>
+
+                        <div id="guardrail-warning" class="hidden p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-xs text-amber-200">
+                            <strong>Insufficient Information:</strong> The available manuals for the selected machine do not contain enough details to answer this query.
+                        </div>
+
+                        <form onsubmit="executeRAGQuery(event)" class="relative">
+                            <div class="relative flex items-center">
+                                <input type="text" id="rag-question-input" required placeholder="Ask about alarm codes, operating limits, inspection schedules..." class="w-full bg-gray-900 border border-gray-700 rounded-xl pl-4 pr-28 py-3.5 text-xs text-white focus:outline-none focus:border-brand-lime">
+                                <button type="submit" class="absolute right-2 px-4 py-2 bg-brand-lime hover:bg-brand-limeDark text-black font-black rounded-lg text-xs uppercase tracking-wider">
+                                    Search
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 5: SUPERVISOR AUDIT PORTAL -->
+        <section id="view-supervisor" class="max-w-7xl mx-auto px-6 space-y-6 hidden transition-all">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5" id="tour-supervisor-export">
+                <div>
+                    <h2 class="text-2xl font-bold text-white uppercase tracking-wider flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-check text-emerald-400"></i> Supervisor Compliance Portal
+                    </h2>
+                    <p class="text-xs text-gray-400">Read-only view to review question history and spot unanswered queries</p>
+                </div>
+                <button onclick="exportAuditLogCSV()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs uppercase tracking-wider">
+                    Export Audit CSV
+                </button>
+            </div>
+
+            <div class="liquid-glass p-6 rounded-2xl space-y-4">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-gray-900 text-gray-400 uppercase font-mono border-b border-gray-800">
+                            <tr>
+                                <th class="p-3">Timestamp</th>
+                                <th class="p-3">User</th>
+                                <th class="p-3">Machine</th>
+                                <th class="p-3">Question</th>
+                                <th class="p-3">Cited Source</th>
+                                <th class="p-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supervisor-audit-tbody" class="divide-y divide-gray-800/60 font-sans">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CITATION INSPECTOR MODAL -->
+    <div id="citation-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="liquid-glass max-w-xl w-full rounded-2xl p-6 space-y-4 relative">
+            <button onclick="closeCitationModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-sm font-bold text-white" id="modal-manual-title">Verified Manual Page Source</h3>
+            <p class="text-xs font-mono text-brand-lime" id="modal-manual-meta"></p>
+            <div class="p-4 rounded-xl bg-gray-900 border border-gray-800 font-mono text-xs text-gray-200 max-h-64 overflow-y-auto" id="modal-passage-text"></div>
+        </div>
+    </div>
+
+    <!-- DUAL-PASSWORD AUTHENTICATION MODAL -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="liquid-glass max-w-md w-full rounded-2xl p-6 space-y-5 relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-1">
+                <h3 class="text-xl font-bold text-white uppercase tracking-tight">MechZen Security Login</h3>
+                <p class="text-xs text-gray-400">Strict Dual-Password Role Authorization</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">Operational Role</label>
+                    <select id="auth-role-select" onchange="updateRoleHint()" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs text-white">
+                        <option value="admin">Administrator (Upload &amp; Management)</option>
+                        <option value="engineer">Plant Engineer (Manual Assistant)</option>
+                        <option value="supervisor">Operations Supervisor (Audit Portal)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">Email Address (1 Email per Role)</label>
+                    <input type="email" id="auth-email" required placeholder="engineer@mechzen.com" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">Password 1 (Account Login)</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs text-white">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-300 mb-1">Password 2 (Role Confirmation Key)</label>
+                    <input type="password" id="auth-role-key" required placeholder="Enter role key" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3.5 py-2.5 text-xs text-white">
+                    <p class="text-[10px] text-brand-lime mt-1 font-mono" id="role-key-hint">Role Key: admin123, engineer123, or supervisor123</p>
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-lime text-black font-black rounded-lg text-xs uppercase tracking-wider">
+                    Authenticate Account
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PROFILE IMAGE EDIT MODAL (DIRECT FILE PICKER FROM GALLERY) -->
+    <div id="profile-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="liquid-glass max-w-sm w-full rounded-2xl p-6 space-y-4 relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-sm font-bold text-white uppercase">Choose Profile Photo</h3>
+            <div class="space-y-2">
+                <label class="block text-xs text-gray-300 mb-1">Select from Device Photo Gallery</label>
+                <div class="border-2 border-dashed border-gray-700 hover:border-brand-lime bg-gray-900/60 rounded-xl p-6 text-center cursor-pointer" onclick="document.getElementById('profile-file-input').click()">
+                    <input type="file" id="profile-file-input" accept="image/*" class="hidden" onchange="handleProfileFileSelect(this)">
+                    <i class="fa-solid fa-user-circle text-3xl text-brand-lime mb-2"></i>
+                    <p class="text-xs font-bold text-white" id="profile-file-label">Click to browse photo gallery</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // FIXED ROLE PASSKEYS FOR HACKATHON RBAC DEMO
+        const ROLE_PASSKEYS = {
+            admin: 'admin123',
+            engineer: 'engineer123',
+            supervisor: 'supervisor123'
+        };
+
+        let tempUploadedMachineImage = null;
+
+        const mechZenState = JSON.parse(localStorage.getItem('mechzen_app_db')) || {
+            currentUser: null,
+            emailRoleMap: {}, // 1 Email per Role lock
+            machines: [
+                {
+                    id: 'M-HP200',
+                    name: 'HP-200 Hydraulic Press',
+                    model: 'HP-200',
+                    img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+                    manuals: [
+                        { docId: 'HP-OPS-01', title: 'HP200_Operations_Rev1_0.pdf', revision: '1.0' },
+                        { docId: 'HP-MNT-01', title: 'HP200_Maintenance_Rev1_0.pdf', revision: '1.0' }
+                    ],
+                    samples: [
+                        "What does E17 mean on HP-200?",
+                        "What is the normal operating pressure range?",
+                        "What are the first checks for E17 low pressure?",
+                        "How often is the return filter checked and replaced?",
+                        "What is the replacement cost of the pump?"
+                    ]
+                },
+                {
+                    id: 'M-AC90',
+                    name: 'AC-90 Air Compressor',
+                    model: 'AC-90',
+                    img: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+                    manuals: [
+                        { docId: 'AC-OM-01', title: 'AC90_Operations_Maintenance_Rev1_0.pdf', revision: '1.0' }
+                    ],
+                    samples: [
+                        "What does E17 mean on AC-90?",
+                        "What is the normal operating pressure range?",
+                        "How often should the AC-90 AF-10 filter indicator be checked, and when is planned filter replacement due?"
+                    ]
+                }
+            ],
+            manualPages: {
+                'M-HP200': [
+                    { docId: 'HP-OPS-01', title: 'HP200_Operations_Rev1_0.pdf', revision: '1.0', page: 1, text: "HP-OPS-01 Page 1: Normal hydraulic pressure is 120 to 140 bar during forming stage. Oil temp ready range: 35 to 55°C.", keywords: ['pressure', 'normal', '120', '140', 'operating'] },
+                    { docId: 'HP-OPS-01', title: 'HP200_Operations_Rev1_0.pdf', revision: '1.0', page: 2, text: "HP-OPS-01 Page 2: Alarms. E17: Low hydraulic pressure (below 110 bar for >5s during forming). E24: Oil temp high warning (>60°C). E31: Guard open. E42: Return filter restriction.", keywords: ['e17', 'alarm', 'meaning', 'low'] },
+                    { docId: 'HP-MNT-01', title: 'HP200_Maintenance_Rev1_0.pdf', revision: '1.0', page: 2, text: "HP-MNT-01 Page 2: Inspection Schedule. Check sight-glass before shift. Check RF-20 restriction indicator every 50 operating hours. Planned RF-20 replacement every 500 operating hours.", keywords: ['how', 'often', 'filter', 'checked', 'rf-20', '50', '500'] },
+                    { docId: 'HP-MNT-01', title: 'HP200_Maintenance_Rev1_0.pdf', revision: '1.0', page: 3, text: "HP-MNT-01 Page 3: Low pressure E17 checks: (1) Reservoir level MIN/MAX, (2) Visible leakage, (3) RF-20 filter state, (4) Record oil temp and forming pressure.", keywords: ['first', 'checks', 'e17', 'order'] }
+                ],
+                'M-AC90': [
+                    { docId: 'AC-OM-01', title: 'AC90_Operations_Maintenance_Rev1_0.pdf', revision: '1.0', page: 1, text: "AC-OM-01 Page 1: Normal outlet pressure is 7.0 to 8.0 bar under steady demand.", keywords: ['pressure', 'normal', '7.0', '8.0', 'operating'] },
+                    { docId: 'AC-OM-01', title: 'AC90_Operations_Maintenance_Rev1_0.pdf', revision: '1.0', page: 2, text: "AC-OM-01 Page 2: E17 on AC-90 means High Discharge Temperature. Record temperature; above 95°C hold for cooling review.", keywords: ['e17', 'alarm', 'meaning', 'discharge', 'temperature'] },
+                    { docId: 'AC-OM-01', title: 'AC90_Operations_Maintenance_Rev1_0.pdf', revision: '1.0', page: 3, text: "AC-OM-01 Page 3: Check AF-10 filter indicator every 100 operating hours. Planned replacement every 600 operating hours.", keywords: ['af-10', 'filter', 'indicator', 'checked', '100', '600', 'replacement'] }
+                ]
+            },
+            queries: [],
+            history: [] // Limited to 5-10
+        };
+
+        function saveDB() {
+            localStorage.setItem('mechzen_app_db', JSON.stringify(mechZenState));
+        }
+
+        let currentTourStep = 0;
+        let tourSteps = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchMachinesFromBackend();
+            updateNavbarState();
+            renderHistorySidebar();
+            renderSupervisorAudit();
+            switchView('landing');
+        });
+
+        async function fetchMachinesFromBackend() {
+            try {
+                let response = await fetch('/api/machines/');
+                if (response.ok) {
+                    let data = await response.json();
+                    let backendMachines = Array.isArray(data) ? data : (data.results || []);
+                    if (backendMachines.length > 0) {
+                        mechZenState.machines = backendMachines.map(m => ({
+                            id: m.code || m.id,
+                            name: m.name,
+                            model: m.code || m.id,
+                            img: m.image || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+                            manuals: m.manuals || [],
+                            samples: m.samples || ["What are the main operating limits?"]
+                        }));
+                    }
+                }
+            } catch (err) {
+                console.warn('Backend fetch fallback to local state:', err);
+            }
+            renderFleetCards();
+            populateMachineDropdowns();
+            renderAdminManageList();
+        }
+
+        // LIQUID GLASS ACTIVE SEGMENT NAV SWITCHER
+        function switchView(viewName) {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(`view-${viewName}`);
+            if (target) target.classList.remove('hidden');
+
+            // Update Liquid Glass Active Pill
+            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active-pill'));
+            const activeNavBtn = document.getElementById(`nav-${viewName}`);
+            if (activeNavBtn) activeNavBtn.classList.add('active-pill');
+
+            document.getElementById('avatar-dropdown').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleAvatarMenu() {
+            document.getElementById('avatar-dropdown').classList.toggle('hidden');
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('avatar-dropdown').classList.add('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        function updateRoleHint() {
+            const role = document.getElementById('auth-role-select').value;
+            document.getElementById('role-key-hint').textContent = `Role Confirmation Key: ${ROLE_PASSKEYS[role]}`;
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const role = document.getElementById('auth-role-select').value;
+            const email = document.getElementById('auth-email').value.toLowerCase().trim();
+            const roleKey = document.getElementById('auth-role-key').value;
+
+            // Dual Password Check
+            if (roleKey !== ROLE_PASSKEYS[role]) {
+                alert(`Invalid Role Confirmation Key for ${role.toUpperCase()}. Demo Key is: ${ROLE_PASSKEYS[role]}`);
+                return;
+            }
+
+            // 1 Email per Role Lock
+            if (mechZenState.emailRoleMap[email] && mechZenState.emailRoleMap[email] !== role) {
+                alert(`Security Policy Error: The email "${email}" is already registered as a ${mechZenState.emailRoleMap[email].toUpperCase()}. You cannot use 1 email for multiple roles.`);
+                return;
+            }
+
+            mechZenState.emailRoleMap[email] = role;
+            mechZenState.currentUser = { email, role, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80' };
+            saveDB();
+
+            closeAuthModal();
+            updateNavbarState();
+
+            if (role === 'admin') switchView('admin');
+            else if (role === 'engineer') switchView('engineer');
+            else if (role === 'supervisor') switchView('supervisor');
+
+            // Trigger Guided Onboarding Tour for New Users
+            startOnboardingTour(role);
+        }
+
+        function logoutUser() {
+            mechZenState.currentUser = null;
+            saveDB();
+            updateNavbarState();
+            switchView('landing');
+        }
+
+        function updateNavbarState() {
+            const user = mechZenState.currentUser;
+            const adminNav = document.getElementById('nav-admin');
+            const engNav = document.getElementById('nav-engineer');
+            const supNav = document.getElementById('nav-supervisor');
+
+            const nameLabel = document.getElementById('dropdown-user-name');
+            const roleLabel = document.getElementById('dropdown-user-role');
+            const workspaceLinks = document.getElementById('dropdown-workspace-links');
+
+            adminNav.classList.add('hidden');
+            engNav.classList.add('hidden');
+            supNav.classList.add('hidden');
+
+            if (user) {
+                nameLabel.textContent = user.email;
+                roleLabel.textContent = `Role: ${user.role.toUpperCase()}`;
+                if (user.avatar) document.getElementById('user-avatar-img').src = user.avatar;
+
+                if (user.role === 'admin') {
+                    adminNav.classList.remove('hidden');
+                    workspaceLinks.innerHTML = `<button onclick="switchView('admin')" class="w-full text-left px-3 py-1.5 text-brand-lime font-bold hover:bg-gray-800 rounded-lg">Admin Command Portal</button>`;
+                } else if (user.role === 'engineer') {
+                    engNav.classList.remove('hidden');
+                    workspaceLinks.innerHTML = `<button onclick="switchView('engineer')" class="w-full text-left px-3 py-1.5 text-brand-lime font-bold hover:bg-gray-800 rounded-lg">Manual Assistant Studio</button>`;
+                } else if (user.role === 'supervisor') {
+                    supNav.classList.remove('hidden');
+                    workspaceLinks.innerHTML = `<button onclick="switchView('supervisor')" class="w-full text-left px-3 py-1.5 text-brand-lime font-bold hover:bg-gray-800 rounded-lg">Supervisor Audit Portal</button>`;
+                }
+            } else {
+                nameLabel.textContent = "Guest User";
+                roleLabel.textContent = "Role: Not Logged In";
+                workspaceLinks.innerHTML = `<p class="text-[11px] text-gray-500 italic px-3">Sign in to unlock role-based workspaces.</p>`;
+            }
+        }
+
+        function triggerAssistantAccess() {
+            if (!mechZenState.currentUser) openAuthModal();
+            else {
+                if (mechZenState.currentUser.role === 'admin') switchView('admin');
+                else if (mechZenState.currentUser.role === 'engineer') switchView('engineer');
+                else if (mechZenState.currentUser.role === 'supervisor') switchView('supervisor');
+            }
+        }
+
+        // RENDER FLEET CARDS IN BOTH OVERVIEW & DEDICATED FLEET PAGE
+        function renderFleetCards() {
+            const html = mechZenState.machines.map(m => `
+                <div class="liquid-glass rounded-2xl overflow-hidden p-6 space-y-4 hover:border-brand-lime/40 transition">
+                    <div class="zoom-img-container w-full h-52 border border-white/10 flex items-center justify-center p-2">
+                        <img src="${m.img}" alt="${m.name}" class="w-full h-full object-contain">
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-mono text-brand-lime uppercase">${m.id}</span>
+                        <h3 class="text-lg font-bold text-white">${m.name}</h3>
+                    </div>
+                    <div class="p-3 bg-gray-900/90 rounded-xl border border-gray-800 space-y-1">
+                        <p class="text-[11px] font-mono text-gray-300 font-bold">Indexed Manual Corpus:</p>
+                        ${(m.manuals || []).map(doc => `
+                            <div class="flex items-center justify-between text-[11px] font-mono text-gray-400">
+                                <span><i class="fa-solid fa-file-pdf text-red-400 mr-1.5"></i>${doc.docId || doc.title}</span>
+                                <span class="text-brand-lime font-bold">Rev ${doc.revision || '1.0'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="selectMachineForEngineer('${m.id}')" class="w-full py-2.5 bg-gray-900 hover:bg-brand-lime hover:text-black text-brand-lime font-bold rounded-lg text-xs uppercase tracking-wider transition">
+                        Open Assistant Studio
+                    </button>
+                </div>
+            `).join('');
+
+            const fleetContainer = document.getElementById('fleet-card-container');
+            const overviewContainer = document.getElementById('overview-fleet-card-container');
+
+            if (fleetContainer) fleetContainer.innerHTML = html;
+            if (overviewContainer) overviewContainer.innerHTML = html;
+        }
+
+        function populateMachineDropdowns() {
+            const engSelect = document.getElementById('engineer-machine-select');
+            if (engSelect) {
+                engSelect.innerHTML = mechZenState.machines.map(m => `<option value="${m.id}">${m.id} (${m.name})</option>`).join('');
+            }
+            renderEngineerStudio();
+        }
+
+        function selectMachineForEngineer(machineId) {
+            if (!mechZenState.currentUser) {
+                openAuthModal();
+                return;
+            }
+            switchView('engineer');
+            document.getElementById('engineer-machine-select').value = machineId;
+            renderEngineerStudio();
+        }
+
+        function renderEngineerStudio() {
+            const selectedId = document.getElementById('engineer-machine-select').value || 'M-HP200';
+            const machine = mechZenState.machines.find(m => m.id === selectedId);
+
+            const sampleContainer = document.getElementById('sample-questions-list');
+            if (machine && machine.samples) {
+                sampleContainer.innerHTML = machine.samples.map(q => `
+                    <button onclick="fillAndSubmitPrompt('${q.replace(/'/g, "\\'")}')" class="w-full p-2.5 rounded-xl bg-gray-900 hover:bg-brand-lime/10 border border-gray-800 text-left text-xs text-gray-300 hover:text-brand-lime transition flex items-center justify-between">
+                        <span>"${q}"</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                `).join('');
+            }
+        }
+
+        function fillAndSubmitPrompt(text) {
+            document.getElementById('rag-question-input').value = text;
+            executeRAGQuery(new Event('submit'));
+        }
+
+        function executeRAGQuery(e) {
+            e.preventDefault();
+            const machineId = document.getElementById('engineer-machine-select').value;
+            const input = document.getElementById('rag-question-input');
+            const question = input.value.trim();
+
+            if (!question) return;
+
+            const target = mechZenState.machines.find(m => m.id === machineId);
+            const availablePages = mechZenState.manualPages[machineId] || [];
+            const lowerQ = question.toLowerCase();
+
+            let matchedPages = availablePages.filter(p => p.keywords.some(kw => lowerQ.includes(kw)));
+            let answerText = "";
+            let sources = [];
+            let isInsufficient = false;
+
+            if (lowerQ.includes('cost') || lowerQ.includes('price') || lowerQ.includes('supplier')) {
+                answerText = `The available manuals for ${target.name} do not contain maintenance costs, spare-part prices, or supplier contact details.`;
+                isInsufficient = true;
+            } else if (matchedPages.length > 0) {
+                answerText = `Grounded in ${target.name} manuals: ` + matchedPages.map(p => p.text).join(' ');
+                sources = matchedPages.map(p => ({ title: p.title, docId: p.docId, page: p.page, text: p.text }));
+            } else {
+                answerText = `The available manuals for ${target.name} do not contain sufficient information to answer this query.`;
+                isInsufficient = true;
+            }
+
+            document.getElementById('guardrail-warning').classList.toggle('hidden', !isInsufficient);
+
+            document.getElementById('rag-output-container').innerHTML = `
+                <div class="p-5 rounded-xl bg-gray-900 border border-brand-lime/30 space-y-4">
+                    <p class="text-xs font-bold text-white">Question: "${question}"</p>
+                    <p class="text-xs text-gray-200 leading-relaxed">${answerText}</p>
+                    ${sources.length > 0 ? `
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-800">
+                            ${sources.map(s => `
+                                <button onclick="openCitationModal('${s.title}', '${s.docId}', ${s.page}, '${s.text.replace(/'/g, "\\'")}')" class="px-3 py-1 bg-brand-lime/10 text-brand-lime border border-brand-lime/30 rounded-lg text-xs font-mono">
+                                    <i class="fa-solid fa-link mr-1"></i>${s.docId} Page ${s.page} (Rev 1.0)
+                                </button>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            const record = {
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                user: mechZenState.currentUser ? mechZenState.currentUser.email : 'engineer@mechzen.com',
+                machineId: machineId,
+                question: question,
+                source: sources.length > 0 ? `${sources[0].docId} (p.${sources[0].page})` : 'None',
+                status: isInsufficient ? 'UNANSWERED' : 'VERIFIED'
+            };
+
+            mechZenState.queries.unshift(record);
+            mechZenState.history.unshift(record);
+
+            if (mechZenState.history.length > 10) {
+                mechZenState.history = mechZenState.history.slice(0, 10);
+            }
+
+            saveDB();
+            input.value = '';
+            renderHistorySidebar();
+            renderSupervisorAudit();
+        }
+
+        function renderHistorySidebar() {
+            const container = document.getElementById('engineer-history-sidebar');
+            const countBadge = document.getElementById('engineer-history-count');
+            countBadge.textContent = `${mechZenState.history.length} / 10`;
+
+            container.innerHTML = mechZenState.history.map(h => `
+                <div class="p-2.5 bg-gray-900/80 rounded-xl border border-gray-800 text-xs space-y-1">
+                    <div class="flex justify-between font-mono text-[10px] text-gray-400">
+                        <span class="text-brand-lime font-bold">${h.machineId}</span>
+                        <span>${h.timestamp}</span>
+                    </div>
+                    <p class="text-gray-200 truncate font-medium">"${h.question}"</p>
+                </div>
+            `).join('');
+        }
+
+        function previewRegisterImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    tempUploadedMachineImage = e.target.result;
+                    document.getElementById('reg-img-label').textContent = input.files[0].name;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function handleRegisterMachine(e) {
+            e.preventDefault();
+            const id = document.getElementById('reg-id').value.trim();
+            const name = document.getElementById('reg-name').value.trim();
+            const img = tempUploadedMachineImage || 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?auto=format&fit=crop&w=600&q=80';
+
+            const formElement = document.getElementById('machine-form');
+            const formData = new FormData(formElement);
+            formData.set('code', id);
+            formData.set('name', name);
+            if (tempUploadedMachineImage && document.getElementById('reg-img-input').files[0]) {
+                formData.set('image', document.getElementById('reg-img-input').files[0]);
+            }
+
+            try {
+                let response = await fetch('/api/machines/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    await fetchMachinesFromBackend();
+                } else {
+                    mechZenState.machines.push({
+                        id, name, model: id, img, manuals: [], samples: ["What are the main operating limits?"]
+                    });
+                    saveDB();
+                    renderFleetCards();
+                    populateMachineDropdowns();
+                    renderAdminManageList();
+                }
+            } catch (err) {
+                mechZenState.machines.push({
+                    id, name, model: id, img, manuals: [], samples: ["What are the main operating limits?"]
+                });
+                saveDB();
+                renderFleetCards();
+                populateMachineDropdowns();
+                renderAdminManageList();
+            }
+
+            tempUploadedMachineImage = null;
+            document.getElementById('reg-img-label').textContent = "Select image from gallery";
+            formElement.reset();
+            alert(`Equipment "${id}" registered successfully!`);
+        }
+
+        function updateFileLabel(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('upload-file-label').textContent = input.files[0].name;
+            }
+        }
+
+        async function handleUploadManual(e) {
+            e.preventDefault();
+            const machineId = document.getElementById('upload-machine-id').value.trim();
+            const docId = document.getElementById('upload-docid').value.trim();
+            const revision = document.getElementById('upload-revision').value.trim();
+
+            const formElement = document.getElementById('manual-form');
+            const formData = new FormData(formElement);
+            formData.append('title', `${docId}_Rev${revision}.pdf`);
+            formData.append('machine', machineId);
+
+            try {
+                let response = await fetch('/api/manuals/', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    await fetchMachinesFromBackend();
+                    alert(`Manual PDF "${docId}" uploaded and indexed via Django RAG pipeline!`);
+                    formElement.reset();
+                    document.getElementById('upload-file-label').textContent = "Click or drag PDF manual here";
+                    return;
+                }
+            } catch (err) {
+                console.warn('Backend manual upload fallback:', err);
+            }
+
+            const machine = mechZenState.machines.find(m => m.id === machineId);
+            if (!machine) {
+                alert(`Machine ID "${machineId}" not found in register. Register it first.`);
+                return;
+            }
+
+            machine.manuals.push({ docId, title: `${docId}_Rev${revision}.pdf`, revision });
+            saveDB();
+            renderFleetCards();
+            renderAdminManageList();
+            alert(`Manual PDF "${docId}" uploaded and indexed for ${machineId}!`);
+            formElement.reset();
+            document.getElementById('upload-file-label').textContent = "Click or drag PDF manual here";
+        }
+
+        function deleteManual(machineId, docId) {
+            const machine = mechZenState.machines.find(m => m.id === machineId);
+            if (machine) {
+                machine.manuals = machine.manuals.filter(m => m.docId !== docId && m.title !== docId);
+                saveDB();
+                renderFleetCards();
+                renderAdminManageList();
+            }
+        }
+
+        function renderAdminManageList() {
+            const container = document.getElementById('admin-manuals-manage-list');
+            let html = "";
+            mechZenState.machines.forEach(m => {
+                (m.manuals || []).forEach(doc => {
+                    let dId = doc.docId || doc.title;
+                    html += `
+                        <div class="flex items-center justify-between p-3 bg-gray-900 rounded-xl border border-gray-800 text-xs">
+                            <div class="font-mono">
+                                <span class="text-brand-lime font-bold mr-2">${m.id}</span>
+                                <span class="text-white">${dId} (Rev ${doc.revision || '1.0'})</span>
+                            </div>
+                            <button onclick="deleteManual('${m.id}', '${dId}')" class="text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-red-500/10 rounded">
+                                Delete
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+            container.innerHTML = html || `<p class="text-xs text-gray-500">No active manuals loaded.</p>`;
+        }
+
+        function openCitationModal(title, docId, page, text) {
+            document.getElementById('modal-manual-title').textContent = title;
+            document.getElementById('modal-manual-meta').textContent = `Doc ID: ${docId} • Page ${page}`;
+            document.getElementById('modal-passage-text').textContent = text;
+            document.getElementById('citation-modal').classList.remove('hidden');
+        }
+
+        function closeCitationModal() {
+            document.getElementById('citation-modal').classList.add('hidden');
+        }
+
+        function openProfileModal() {
+            document.getElementById('profile-modal').classList.remove('hidden');
+            document.getElementById('avatar-dropdown').classList.add('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        function handleProfileFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const avatarUrl = e.target.result;
+                    if (mechZenState.currentUser) {
+                        mechZenState.currentUser.avatar = avatarUrl;
+                        saveDB();
+                    }
+                    document.getElementById('user-avatar-img').src = avatarUrl;
+                    document.getElementById('profile-file-label').textContent = input.files[0].name;
+                    setTimeout(closeProfileModal, 600);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function renderSupervisorAudit() {
+            const tbody = document.getElementById('supervisor-audit-tbody');
+            tbody.innerHTML = mechZenState.queries.map(q => `
+                <tr>
+                    <td class="p-3 font-mono text-gray-400">${q.timestamp}</td>
+                    <td class="p-3 text-white font-semibold">${q.user}</td>
+                    <td class="p-3 font-mono text-brand-lime">${q.machineId}</td>
+                    <td class="p-3 text-gray-300 truncate max-w-xs font-medium">${q.question}</td>
+                    <td class="p-3 font-mono text-gray-400">${q.source}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${q.status === 'VERIFIED' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${q.status}</span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function exportAuditLogCSV() {
+            let csv = "Timestamp,User,Machine,Question,Status\n";
+            mechZenState.queries.forEach(q => {
+                csv += `${q.timestamp},${q.user},${q.machineId},"${q.question}",${q.status}\n`;
+            });
+            const link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            link.download = `MechZen_Audit_Report.csv`;
+            link.click();
+        }
+
+        function startOnboardingTour(role) {
+            if (role === 'admin') {
+                tourSteps = [
+                    { id: 'tour-admin-register', title: 'Register Machinery', desc: 'Add new machine IDs and photo references into the plant index.' },
+                    { id: 'tour-admin-upload', title: 'Upload Manual PDFs', desc: 'Upload manual PDFs with revision tracking. Engineers can immediately search them.' }
+                ];
+            } else if (role === 'engineer') {
+                tourSteps = [
+                    { id: 'tour-engineer-select', title: 'Select Machine Lock', desc: 'Choose a target machine. Search context is locked strictly to its manuals.' },
+                    { id: 'tour-engineer-query', title: 'Ask Maintenance Question', desc: 'Ask technical questions. Receive answers with exact PDF page citations.' },
+                    { id: 'tour-engineer-history', title: 'Rolling History', desc: 'Access your recent 5-10 searches anytime.' }
+                ];
+            } else if (role === 'supervisor') {
+                tourSteps = [
+                    { id: 'tour-supervisor-export', title: 'Audit & Compliance Export', desc: 'Review engineer queries, track unanswered gaps, and export audit reports.' }
+                ];
+            }
+
+            if (tourSteps.length > 0) {
+                currentTourStep = 0;
+                showTourStep();
+            }
+        }
+
+        function showTourStep() {
+            document.querySelectorAll('.spotlight-active').forEach(e => e.classList.remove('spotlight-active'));
+
+            const step = tourSteps[currentTourStep];
+            const targetEl = document.getElementById(step.id);
+            const tooltip = document.getElementById('spotlight-tooltip');
+
+            if (targetEl) {
+                targetEl.classList.add('spotlight-active');
+                tooltip.classList.remove('hidden');
+
+                document.getElementById('tour-step-badge').textContent = `STEP ${currentTourStep + 1}/${tourSteps.length}`;
+                document.getElementById('tour-title').textContent = step.title;
+                document.getElementById('tour-desc').textContent = step.desc;
+
+                const rect = targetEl.getBoundingClientRect();
+                tooltip.style.top = `${Math.min(rect.bottom + 10, window.innerHeight - 180)}px`;
+                tooltip.style.left = `${Math.max(20, rect.left)}px`;
+            }
+        }
+
+        function nextTourStep() {
+            if (currentTourStep < tourSteps.length - 1) {
+                currentTourStep++;
+                showTourStep();
+            } else {
+                endOnboardingTour();
+            }
+        }
+
+        function prevTourStep() {
+            if (currentTourStep > 0) {
+                currentTourStep--;
+                showTourStep();
+            }
+        }
+
+        function endOnboardingTour() {
+            document.querySelectorAll('.spotlight-active').forEach(e => e.classList.remove('spotlight-active'));
+            document.getElementById('spotlight-tooltip').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
