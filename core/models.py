@@ -1,33 +1,58 @@
 from django.db import models
 
 class Machine(models.Model):
-    name = models.CharField(max_length=150)
-    code = models.CharField(max_length=50, unique=True)
-    status = models.CharField(max_length=50, default='Operational')
-    description = models.TextField()
-    image = models.ImageField(upload_to='machines/', blank=True, null=True)
+    name = models.CharField(max_length=100)
+    model_code = models.CharField(max_length=50, default="P-PLATE01")
+    status = models.CharField(max_length=50, default="Active")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.name} ({self.code})"
+        return self.name
 
 class Manual(models.Model):
-    machine = models.ForeignKey(Machine, related_name='manuals', on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    pdf_file = models.FileField(upload_to='manuals/')
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='manuals/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    is_indexed = models.BooleanField(default=False)
 
-class ManualChunk(models.Model):
-    manual = models.ForeignKey(Manual, related_name='chunks', on_delete=models.CASCADE)
-    machine = models.ForeignKey(Machine, related_name='chunks', on_delete=models.CASCADE)
-    page_number = models.IntegerField()
-    content = models.TextField()
-    embedding = models.JSONField(blank=True, null=True)
+    def __str__(self):
+        return self.title
 
 class AuditLog(models.Model):
+    action = models.CharField(max_length=255)
+    performed_by = models.CharField(max_length=150)
     timestamp = models.DateTimeField(auto_now_add=True)
-    machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
-    query = models.TextField()
-    citation = models.CharField(max_length=100)
-    status = models.CharField(max_length=50, default='Verified')
+    details = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.action} by {self.performed_by}"
+
+class InspectionRecord(models.Model):
+    image_name = models.CharField(max_length=255)
+    prediction = models.CharField(max_length=50)
+    confidence = models.FloatField()
+    model_version = models.CharField(max_length=50, default="BIT-PLATE-CV-1.0")
+    supervisor_reviewed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.image_name} - {self.prediction} ({self.confidence}%)"
+
+class InspectionResult(models.Model):
+    batch_id = models.CharField(max_length=100)
+    image_name = models.CharField(max_length=255)
+    status = models.CharField(max_length=50) # Defective or Normal
+    confidence = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.image_name} - {self.status}"
+
+class SupervisorReview(models.Model):
+    inspection = models.ForeignKey(InspectionResult, on_delete=models.CASCADE)
+    reviewer = models.CharField(max_length=150)
+    override_status = models.CharField(max_length=50)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Review by {self.reviewer} on {self.inspection.image_name}"

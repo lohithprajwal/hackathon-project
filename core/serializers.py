@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Machine, Manual, AuditLog
+from .models import Machine, Manual, AuditLog, InspectionResult, SupervisorReview
 
 class MachineSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,4 +14,14 @@ class ManualSerializer(serializers.ModelSerializer):
 class AuditLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = AuditLog
+        fields = '__all__'
+
+class InspectionResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InspectionResult
+        fields = '__all__'
+
+class SupervisorReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SupervisorReview
         fields = '__all__'

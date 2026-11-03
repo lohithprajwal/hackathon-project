@@ -1,0 +1,6 @@
+{
+  "plate_sample_01.jpg": false,
+  "plate_sample_02.jpg": true,
+  "plate_sample_03.jpg": false
+  // ... up to 60 sample images
+}

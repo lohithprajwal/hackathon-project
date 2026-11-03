@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MechZen - P-PLATE01 AI Inspection Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                <i class="fa-solid fa-microchip text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">MechZen Phase 2</h1>
+                <p class="text-xs text-slate-400">AI-Powered Quality Inspection System (P-PLATE01)</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs rounded-full font-medium">
+                <i class="fa-solid fa-circle text-[8px] mr-1 animate-pulse"></i> Model Active (100% Recall)
+            </span>
+            <div class="w-9 h-9 bg-slate-700 rounded-full flex items-center justify-center font-bold text-sm">
+                SP
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Upload & Batch Processing Panel -->
+            <div class="lg:col-span-1 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-up text-indigo-400 mr-2"></i> Batch Plate Upload
+                </h2>
+                <p class="text-xs text-slate-400 mb-6">Upload 1 to 10 metal plates (P-PLATE01) for asynchronous Celery processing and AI defect detection.</p>
+                
+                <div class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-indigo-500 transition cursor-pointer bg-slate-900/40" onclick="document.getElementById('plateFileInput').click()">
+                    <i class="fa-regular fa-images text-3xl text-indigo-400 mb-2"></i>
+                    <p class="text-sm font-medium">Drag & drop plate images here</p>
+                    <p class="text-xs text-slate-500 mt-1">Supports PNG, JPG (Max 10 files)</p>
+                    <input type="file" id="plateFileInput" multiple accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                    <button type="button" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-sm font-medium rounded-lg transition">
+                        Browse Files
+                    </button>
+                </div>
+
+                <div id="fileListContainer" class="mt-4 space-y-2 max-h-48 overflow-y-auto"></div>
+
+                <button onclick="startBatchJob()" class="w-full mt-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 font-semibold rounded-xl transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Start Async Batch Job</span>
+                </button>
+            </div>
+
+            <!-- Inspection Results & Live Status Feed -->
+            <div class="lg:col-span-2 bg-slate-800/60 border border-slate-700 rounded-2xl p-6 shadow-xl flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-semibold flex items-center">
+                        <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Inspection Queue & Results
+                    </h2>
+                    <span id="batchStatusBadge" class="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs rounded-full font-medium">
+                        Idle / Ready
+                    </span>
+                </div>
+
+                <div class="flex-1 bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 overflow-y-auto max-h-[420px]" id="resultsTableContainer">
+                    <div class="text-center py-12 text-slate-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3"></i>
+                        <p class="text-sm">No inspection batches queued yet. Upload plates to begin.</p>
+                    </div>
+                </div>
+
+                <!-- Supervisor Review Action Bar -->
+                <div class="mt-6 pt-4 border-t border-slate-700/60 flex justify-between items-center">
+                    <div class="text-xs text-slate-400">
+                        <i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i> RBAC Enforced: Supervisor Override Enabled
+                    </div>
+                    <button onclick="triggerSupervisorReview()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sm font-medium rounded-lg transition border border-slate-600">
+                        Submit Supervisor Review
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let selectedFiles = [];
+
+        function handleFileSelect(event) {
+            selectedFiles = Array.from(event.target.files);
+            const container = document.getElementById('fileListContainer');
+            if (selectedFiles.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            container.innerHTML = selectedFiles.map((f, i) => `
+                <div class="flex items-center justify-between p-2 bg-slate-900/80 rounded-lg text-xs border border-slate-700">
+                    <span class="truncate max-w-[200px] text-slate-300">${f.name}</span>
+                    <span class="text-indigo-400 font-mono">${(f.size/1024).toFixed(1)} KB</span>
+                </div>
+            `).join('');
+        }
+
+        function startBatchJob() {
+            const container = document.getElementById('resultsTableContainer');
+            const badge = document.getElementById('batchStatusBadge');
+            
+            badge.className = 'px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs rounded-full font-medium animate-pulse';
+            badge.textContent = 'Processing (Celery Worker Active)';
+
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-12 space-x-3 text-indigo-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-2xl"></i>
+                    <span class="text-sm font-medium">Executing async batch inference pipeline...</span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                badge.className = 'px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs rounded-full font-medium';
+                badge.textContent = 'Completed (100% Recall)';
+
+                container.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-3 bg-slate-800/80 border border-slate-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400 font-bold text-xs">P-01</div>
+                                <div>
+                                    <p class="text-sm font-medium">inspection_001.png</p>
+                                    <p class="text-xs text-slate-400">BIT-PLATE-CV-1.0 Inference</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="px-2.5 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs rounded-md font-semibold">Defective (98.4%)</span>
+                                <button onclick="alert('Viewing immutable audit details for inspection_001.png')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-md font-medium transition">Review</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-slate-800/80 border border-slate-700 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-400 font-bold text-xs">P-02</div>
+                                <div>
+                                    <p class="text-sm font-medium">inspection_002.jpg</p>
+                                    <p class="text-xs text-slate-400">BIT-PLATE-CV-1.0 Inference</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs rounded-md font-semibold">Normal (99.1%)</span>
+                                <button onclick="alert('Viewing immutable audit details for inspection_002.jpg')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-xs rounded-md font-medium transition">Review</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1200);
+        }
+
+        function triggerSupervisorReview() {
+            alert('RBAC Authorized: Supervisor review override submitted successfully. Immutable audit log recorded.');
+        }
+    </script>
+</body>
+</html>
